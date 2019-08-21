@@ -75,8 +75,8 @@
                         "UUID: " (bytes->string/utf-8 (base64-encode (replay-uuid r) ""))))
   (let* ([all-missions (list "Bug Ambassador" "Contact Double Agent" "Transfer Microfilm" "Swap Statue" "Inspect Statues" "Seduce Target" "Purloin Guest List" "Fingerprint Ambassador")]
          [s-missions (filter-not void? (if (not (equal? (substring (replay-game-type r) 0 1) "p"))
-                                                   (replay-selected-missions r)
-                                                   (replay-picked-missions r)))]
+                                           (replay-selected-missions r)
+                                           (replay-picked-missions r)))]
          [completed (filter-not void? (replay-completed-missions r))])
     (for/list ([m (in-list s-missions)])
       (new check-box% [parent layout] [label m] [value (set-member? completed m)])))
@@ -206,7 +206,7 @@
                                      (when tempfiles
                                        (begin-busy-cursor)
                                        (let*-values ([(good bad) (get-games1 tempfiles)]
-                                                    [(good1) (list->vector good)])
+                                                     [(good1) (list->vector good)])
                                          (when (not (empty? bad))
                                            (message-box "Skipped Files" (~a bad) main-frame 'ok))
                                          (set! *master-replay-vector* good1)
@@ -216,12 +216,12 @@
 (define open-folder (new menu-item% [label "Open Directory"] [parent file-menu]
                          (callback (lambda (x y)
                                      (let*-values ([(dir) (get-directory
-                                                         "Open Directory"
-                                                         main-frame)]
+                                                           "Open Directory"
+                                                           main-frame)]
                                                    [(good bad) (begin
                                                                  (begin-busy-cursor)
                                                                  (get-games dir))]
-                                                  [(good1) (list->vector good)])
+                                                   [(good1) (list->vector good)])
                                        (when (and (list? bad) (not (empty? bad)))
                                          (message-box "Skipped Files" (~a bad) main-frame (list 'ok 'stop)))
                                        (when (equal? 'empty bad)
@@ -232,7 +232,7 @@
                                        (end-busy-cursor))))
                          [shortcut-prefix (list 'ctl)]
                          [shortcut #\D]))
-(define reset (new menu-item% [label "Reset"] [parent file-menu]
+(define reset (new menu-item% [label "Reset"] [parent filter-menu]
                    [shortcut-prefix (list 'ctl)]
                    [shortcut #\R]
                    [callback (lambda (parent date-menu)
@@ -391,8 +391,8 @@
                                                             (send l-box set
                                                                   (foldl (lambda (x y) (cons (car x) y)) '() sorted)
                                                                   (foldl (lambda (x y) (cons (~a (~r (player-r (cdr x)) #:precision 0)
-                                                                                            " ± "
-                                                                                            (~r (player-rd (cdr x)) #:precision 0))
+                                                                                              " ± "
+                                                                                              (~r (player-rd (cdr x)) #:precision 0))
                                                                                         y)) '() sorted)))
                                                           (let ([sorted (sort (hash->list players) string<? #:key car)])
                                                             (vector-set! modal11 0 #t)
@@ -400,8 +400,8 @@
                                                             (send l-box set
                                                                   (foldl (lambda (x y) (cons (car x) y)) '() sorted)
                                                                   (foldl (lambda (x y) (cons (~a (~r (player-r (cdr x)) #:precision 0)
-                                                                                            " ± "
-                                                                                            (~r (player-rd (cdr x)) #:precision 0))
+                                                                                              " ± "
+                                                                                              (~r (player-rd (cdr x)) #:precision 0))
                                                                                         y)) '() sorted))))]
                                                      [(list 'list-box-column 1)
                                                       (if (vector-ref modal12 0)
@@ -411,8 +411,8 @@
                                                             (send l-box set
                                                                   (foldl (lambda (x y) (cons (car x) y)) '() sorted)
                                                                   (foldl (lambda (x y) (cons (~a (~r (player-r (cdr x)) #:precision 0)
-                                                                                            " ± "
-                                                                                            (~r (player-rd (cdr x)) #:precision 0))
+                                                                                              " ± "
+                                                                                              (~r (player-rd (cdr x)) #:precision 0))
                                                                                         y)) '() sorted)))
                                                           (let ([sorted (sort (hash->list players) > #:key (lambda (x) (player-r (cdr x))))])
                                                             (vector-set! modal12 0 #t)
@@ -420,8 +420,8 @@
                                                             (send l-box set
                                                                   (foldl (lambda (x y) (cons (car x) y)) '() sorted)
                                                                   (foldl (lambda (x y) (cons (~a (~r (player-r (cdr x)) #:precision 0)
-                                                                                            " ± "
-                                                                                            (~r (player-rd (cdr x)) #:precision 0))
+                                                                                              " ± "
+                                                                                              (~r (player-rd (cdr x)) #:precision 0))
                                                                                         y)) '() sorted))))]
                                                      [(list 'list-box-dclick _)
                                                       (begin
@@ -446,11 +446,11 @@
                                                                                                                                                      1))))))])
                                                                                             (list (list-ref i 1) (list-ref i 2) (list-ref i 3))))
                                                                               (points (for/list ([i (filter (lambda (x) (= 0 (car x)))
-                                                                                                                (reverse (hash-ref player-history
-                                                                                                                                   (car (list-ref current-shown
-                                                                                                                                                  (- (length current-shown)
-                                                                                                                                                     (car (send list-box get-selections))
-                                                                                                                                                     1))))))])
+                                                                                                            (reverse (hash-ref player-history
+                                                                                                                               (car (list-ref current-shown
+                                                                                                                                              (- (length current-shown)
+                                                                                                                                                 (car (send list-box get-selections))
+                                                                                                                                                 1))))))])
                                                                                             (list (list-ref i 1) (list-ref i 2)))))))]))
                                                         (define text (new text% [auto-wrap #t]))
                                                         (send text hide-caret #t)
@@ -549,8 +549,8 @@
                                          (send l-box set
                                                (foldl (lambda (x y) (cons (car x) y)) '() sorted)
                                                (foldl (lambda (x y) (cons (~a (~r (player-r (cdr x)) #:precision 0)
-                                                                         " ± "
-                                                                         (~r (player-rd (cdr x)) #:precision 0))
+                                                                           " ± "
+                                                                           (~r (player-rd (cdr x)) #:precision 0))
                                                                      y)) '() sorted))))))]))
 
 
@@ -639,29 +639,29 @@
                                                            #f
                                                            (for/list ([i (in-list (send venue-list get-selections))])
                                                              (list-ref (list "Veranda"
-                                                                      "Courtyard"
-                                                                      "Library"
-                                                                      "Balcony"
-                                                                      "Gallery"
-                                                                      "Terrace"
-                                                                      "Moderne"
-                                                                      "Teien"
-                                                                      "Aquarium"
-                                                                      "BvB High-Rise"
-                                                                      "BvB Ballroom"
-                                                                      "Ballroom"
-                                                                      "High-Rise"
-                                                                      "Old-Art Gallery"
-                                                                      "Old-Art Courtyard 2"
-                                                                      "Old-Art Panopticon"
-                                                                      "Old-Art Veranda"
-                                                                      "Old-Art Balcony"
-                                                                      "Crowded Pub"
-                                                                      "Pub"
-                                                                      "Old-Art Ballroom"
-                                                                      "Old-Art Courtyard 1"
-                                                                      "Double Modern"
-                                                                      "Modern")
+                                                                        "Courtyard"
+                                                                        "Library"
+                                                                        "Balcony"
+                                                                        "Gallery"
+                                                                        "Terrace"
+                                                                        "Moderne"
+                                                                        "Teien"
+                                                                        "Aquarium"
+                                                                        "BvB High-Rise"
+                                                                        "BvB Ballroom"
+                                                                        "Ballroom"
+                                                                        "High-Rise"
+                                                                        "Old-Art Gallery"
+                                                                        "Old-Art Courtyard 2"
+                                                                        "Old-Art Panopticon"
+                                                                        "Old-Art Veranda"
+                                                                        "Old-Art Balcony"
+                                                                        "Crowded Pub"
+                                                                        "Pub"
+                                                                        "Old-Art Ballroom"
+                                                                        "Old-Art Courtyard 1"
+                                                                        "Double Modern"
+                                                                        "Modern")
                                                                        i)))]
                                                 [parse-date (lambda (s)
                                                               (match (date-display-format)
@@ -670,14 +670,14 @@
                                                                 ['rfc2822 (string->date s
                                                                                         "~a, ~d ~b ~Y ~H:~M:~S ~z")]))]
                                                 [start-time (with-handlers ([exn:fail? (lambda (e) (begin
-                                                                                           (message-box "Error!"
-                                                                                                        "Bad date string in the start-time slot. If you're filling out a custom date, make sure to exactly follow the chosen date format.")
-                                                                                           (seconds->date 0)))])
+                                                                                                    (message-box "Error!"
+                                                                                                                 "Bad date string in the start-time slot. If you're filling out a custom date, make sure to exactly follow the chosen date format.")
+                                                                                                    (seconds->date 0)))])
                                                               (parse-date (send filter-time1 get-value)))]
                                                 [end-time (with-handlers ([exn:fail? (lambda (e) (begin
-                                                                                         (message-box "Error!"
-                                                                                                      "Bad date string in the end-time slot. If you're filling out a custom date, make sure to exactly follow the chosen date format.")
-                                                                                         (current-date)))])
+                                                                                                  (message-box "Error!"
+                                                                                                               "Bad date string in the end-time slot. If you're filling out a custom date, make sure to exactly follow the chosen date format.")
+                                                                                                  (current-date)))])
                                                              (parse-date (send filter-time2 get-value)))]
                                                 [temp-filter (λ (a)
                                                                (and
