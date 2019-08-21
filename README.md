@@ -18,6 +18,10 @@ Currently, the Replay Viewer is fully operational and should be relatively bug-f
 
 If you encounter any bugs, please provide the error message that appears as well as the steps necessary to reproduce the error.
 
+# Thanks
+
+Special thanks to checker, for being kind enough to document the replay header format, and for LtHummus for his SpyParty Replay Parser Tool in Python, which I used as a reference when hunting down some bad bugs.
+
 # Build
 
 If you would like to build the binary from scratch, clone the source repository. Compiling requires the [Racket programming language][https://racket-lang.org/], version 7.4 Regular.
