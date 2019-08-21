@@ -1,6 +1,5 @@
 #lang racket
 
-(require threading)
 (require "parser.rkt")
 (provide (all-defined-out))
 
@@ -25,22 +24,37 @@
    directory))
 
 (define (get-games dir)
-  (let ([x (~> dir
-               get-replay-paths
-               (map read-replay _)
-               (map parse-game _))])
+  (let ([x (map parse-game (map read-replay (get-replay-paths dir)))])
+    (if (empty? x)
+        (values null 'empty)
+        (let loop ([y (first x)]
+                   [z (rest x)]
+                   [good '()]
+                   [bad '()])
+          (if (empty? z)
+              (match y
+                [(exception 'file-version _) (list good (cons (exception-info y) bad))]
+                [(exception 'file-not-valid _) (list good (cons (exception-info y) bad))]
+                [_ (values (cons y good) bad)])
+              (match y
+                [(exception 'file-version _) (loop (first z) (rest z) good (cons (exception-info y) bad))]
+                [(exception 'file-not-valid _) (loop (first z) (rest z) good (cons (exception-info y) bad))]
+                [_ (loop (first z) (rest z) (cons y good) bad)]))))))
+
+(define (get-games1 file-list)
+  (let ([x (map parse-game (map read-replay (map (λ (x) (cons (file-name-from-path x) x)) file-list)))])
     (let loop ([y (first x)]
                [z (rest x)]
                [good '()]
                [bad '()])
       (if (empty? z)
           (match y
-            ;[(exception 'file-version _) (list good (cons (exception-info y) bad))]
-            ;[(exception 'file-not-valid _) (list good (cons (exception-info y) bad))]
+            [(exception 'file-version _) (list good (cons (exception-info y) bad))]
+            [(exception 'file-not-valid _) (list good (cons (exception-info y) bad))]
             [_ (values (cons y good) bad)])
           (match y
-            ;[(exception 'file-version _) (loop (first z) (rest z) good (cons (exception-info y) bad))]
-            ;[(exception 'file-not-valid _) (loop (first z) (rest z) good (cons (exception-info y) bad))]
+            [(exception 'file-version _) (loop (first z) (rest z) good (cons (exception-info y) bad))]
+            [(exception 'file-not-valid _) (loop (first z) (rest z) good (cons (exception-info y) bad))]
             [_ (loop (first z) (rest z) (cons y good) bad)])))))
 
 (define (get-spy-name game)

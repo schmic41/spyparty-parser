@@ -3,7 +3,6 @@
 ; TODO: Add map and selected mission support
 
 (require racket/match)
-(require threading)
 
 (provide (struct-out replay) (struct-out exception) parse-game)
 
@@ -22,7 +21,7 @@
                 game-type
                 selected-missions
                 picked-missions
-                missions-completed
+                completed-missions
                 spy-username
                 spy-displayname
                 sniper-username
@@ -99,58 +98,43 @@
                         [#"\4\0\0\0" "In-Progress"]
                         [#"\5\0\0\0" "Number of Results"]
                         [_ (error 'outcome filename)])]
-             [base-type (match (~> header
-                                   (subbytes #x34 #x38)
-                                   (integer-bytes->integer #f)
-                                   (arithmetic-shift -28))
+             [base-type (match (arithmetic-shift (integer-bytes->integer (subbytes header #x34 #x38) #f) -28)   
                           [0 "k"]
                           [1 "p"]
                           [2 "a"]
                           [_ (error 'base-type filename)])]
-             [required (~> header
-                           (subbytes #x34 #x38)
-                           (integer-bytes->integer #f)
-                           (bitwise-and #x00003FFF))]
-             [available (~> header
-                            (subbytes #x34 #x38)
-                            (integer-bytes->integer #f)
-                            (bitwise-and #x0FFFC000)
-                            (arithmetic-shift -14))]
-             [selected-missions (let* ([tempint (~> header
-                                                   (subbytes #x3C #x40)
-                                                   (integer-bytes->integer #f))]
-                                      [bug? (when (bitwise-and tempint (arithmetic-shift 1 0)) "Bug Ambassador")]
-                                      [contact? (when (bitwise-and tempint (arithmetic-shift 1 1)) "Contact Double Agent")]
-                                      [transfer? (when (bitwise-and tempint (arithmetic-shift 1 2)) "Transfer Microfilm")]
-                                      [swap? (when (bitwise-and tempint (arithmetic-shift 1 3)) "Swap Statue")]
-                                      [inspect? (when (bitwise-and tempint (arithmetic-shift 1 4)) "Inspect Statues")]
-                                      [seduce? (when (bitwise-and tempint (arithmetic-shift 1 5)) "Seduce Target")]
-                                      [purloin? (when (bitwise-and tempint (arithmetic-shift 1 6)) "Purloin Guest List")]
-                                      [fingerprint? (when (bitwise-and tempint (arithmetic-shift 1 7)) "Fingerprint Ambassador")])
+             [required (bitwise-and (integer-bytes->integer (subbytes header #x34 #x38) #f) #x00003FFF)]
+             [available
+                        (arithmetic-shift (bitwise-and (integer-bytes->integer (subbytes header #x34 #x38) #f) #x0FFFC000) -14)]
+             [selected-missions (let* ([tempint (integer-bytes->integer (subbytes header #x3C #x40) #f)]
+                                       [bug? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 0)))) "Bug Ambassador")]
+                                       [contact? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 1)))) "Contact Double Agent")]
+                                       [transfer? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 2)))) "Transfer Microfilm")]
+                                       [swap? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 3)))) "Swap Statue")]
+                                       [inspect? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 4)))) "Inspect Statues")]
+                                       [seduce? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 5)))) "Seduce Target")]
+                                       [purloin? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 6)))) "Purloin Guest List")]
+                                       [fingerprint? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 7)))) "Fingerprint Ambassador")])
                                  (list bug? contact? transfer? swap? inspect? seduce? purloin? fingerprint?))]
-             [picked-missions (let* ([tempint (~> header
-                                                  (subbytes #x40 #x44)
-                                                  (integer-bytes->integer #f))]
-                                     [bug? (when (bitwise-and tempint (arithmetic-shift 1 0)) "Bug Ambassador")]
-                                     [contact? (when (bitwise-and tempint (arithmetic-shift 1 1)) "Contact Double Agent")]
-                                     [transfer? (when (bitwise-and tempint (arithmetic-shift 1 2)) "Transfer Microfilm")]
-                                     [swap? (when (bitwise-and tempint (arithmetic-shift 1 3)) "Swap Statue")]
-                                     [inspect? (when (bitwise-and tempint (arithmetic-shift 1 4)) "Inspect Statues")]
-                                     [seduce? (when (bitwise-and tempint (arithmetic-shift 1 5)) "Seduce Target")]
-                                     [purloin? (when (bitwise-and tempint (arithmetic-shift 1 6)) "Purloin Guest List")]
-                                     [fingerprint? (when (bitwise-and tempint (arithmetic-shift 1 7)) "Fingerprint Ambassador")])
+             [picked-missions (let* ([tempint (integer-bytes->integer (subbytes header #x40 #x44) #f)]
+                                     [bug? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 0)))) "Bug Ambassador")]
+                                     [contact? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 1)))) "Contact Double Agent")]
+                                     [transfer? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 2)))) "Transfer Microfilm")]
+                                     [swap? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 3)))) "Swap Statue")]
+                                     [inspect? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 4)))) "Inspect Statues")]
+                                     [seduce? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 5)))) "Seduce Target")]
+                                     [purloin? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 6)))) "Purloin Guest List")]
+                                     [fingerprint? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 7)))) "Fingerprint Ambassador")])
                                 (list bug? contact? transfer? swap? inspect? seduce? purloin? fingerprint?))]
-             [missions-completed (let* ([tempint (~> header
-                                                     (subbytes #x44 #x48)
-                                                     (integer-bytes->integer #f))]
-                                        [bug? (when (bitwise-and tempint (arithmetic-shift 1 0)) "Bug Ambassador")]
-                                        [contact? (when (bitwise-and tempint (arithmetic-shift 1 1)) "Contact Double Agent")]
-                                        [transfer? (when (bitwise-and tempint (arithmetic-shift 1 2)) "Transfer Microfilm")]
-                                        [swap? (when (bitwise-and tempint (arithmetic-shift 1 3)) "Swap Statue")]
-                                        [inspect? (when (bitwise-and tempint (arithmetic-shift 1 4)) "Inspect Statues")]
-                                        [seduce? (when (bitwise-and tempint (arithmetic-shift 1 5)) "Seduce Target")]
-                                        [purloin? (when (bitwise-and tempint (arithmetic-shift 1 6)) "Purloin Guest List")]
-                                        [fingerprint? (when (bitwise-and tempint (arithmetic-shift 1 7)) "Fingerprint Ambassador")])
+             [completed-missions (let* ([tempint (integer-bytes->integer (subbytes header #x44 #x48) #f)]
+                                        [bug? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 0)))) "Bug Ambassador")]
+                                        [contact? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 1)))) "Contact Double Agent")]
+                                        [transfer? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 2)))) "Transfer Microfilm")]
+                                        [swap? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 3)))) "Swap Statue")]
+                                        [inspect? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 4)))) "Inspect Statues")]
+                                        [seduce? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 5)))) "Seduce Target")]
+                                        [purloin? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 6)))) "Purloin Guest List")]
+                                        [fingerprint? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 7)))) "Fingerprint Ambassador")])
                                    (list bug? contact? transfer? swap? inspect? seduce? purloin? fingerprint?))]
              [game-type (if (equal? base-type "Known")
                             (~a base-type available)
@@ -172,7 +156,7 @@
          game-type
          selected-missions
          picked-missions
-         missions-completed
+         completed-missions
          spy-name
          #f
          sniper-name
@@ -200,58 +184,42 @@
                         [#"\4\0\0\0" "In-Progress"]
                         [#"\5\0\0\0" "Number of Results"]
                         [_ (error 'outcome filename)])]
-             [base-type (match (~> header
-                                   (subbytes #x38 60)
-                                   (integer-bytes->integer #f)
-                                   (arithmetic-shift -28))
+             [base-type (match (arithmetic-shift (integer-bytes->integer (subbytes header #x38 60) #f) -28)
                           [0 "k"]
                           [1 "p"]
                           [2 "a"]
                           [_ (error 'base-type filename)])]
-             [required (~> header
-                           (subbytes #x38 60)
-                           (integer-bytes->integer #f)
-                           (bitwise-and #x00003FFF))]
-             [available (~> header
-                            (subbytes #x38 60)
-                            (integer-bytes->integer #f)
-                            (bitwise-and #x0FFFC000)
-                            (arithmetic-shift -14))]
-             [selected-missions (let* ([tempint (~> header
-                                                   (subbytes #x40 #x44)
-                                                   (integer-bytes->integer #f))]
-                                      [bug? (when (bitwise-and tempint (arithmetic-shift 1 0)) "Bug Ambassador")]
-                                      [contact? (when (bitwise-and tempint (arithmetic-shift 1 1)) "Contact Double Agent")]
-                                      [transfer? (when (bitwise-and tempint (arithmetic-shift 1 2)) "Transfer Microfilm")]
-                                      [swap? (when (bitwise-and tempint (arithmetic-shift 1 3)) "Swap Statue")]
-                                      [inspect? (when (bitwise-and tempint (arithmetic-shift 1 4)) "Inspect Statues")]
-                                      [seduce? (when (bitwise-and tempint (arithmetic-shift 1 5)) "Seduce Target")]
-                                      [purloin? (when (bitwise-and tempint (arithmetic-shift 1 6)) "Purloin Guest List")]
-                                      [fingerprint? (when (bitwise-and tempint (arithmetic-shift 1 7)) "Fingerprint Ambassador")])
+             [required (bitwise-and (integer-bytes->integer (subbytes header #x38 60) #f) #x00003FFF)]
+             [available (arithmetic-shift (bitwise-and (integer-bytes->integer (subbytes header #x38 60) #f) #x0FFFC000) -14)]
+             [selected-missions (let* ([tempint (integer-bytes->integer (subbytes header #x40 #x44) #f)]
+                                       [bug? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 0)))) "Bug Ambassador")]
+                                       [contact? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 1)))) "Contact Double Agent")]
+                                       [transfer? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 2)))) "Transfer Microfilm")]
+                                       [swap? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 3)))) "Swap Statue")]
+                                       [inspect? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 4)))) "Inspect Statues")]
+                                       [seduce? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 5)))) "Seduce Target")]
+                                       [purloin? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 6)))) "Purloin Guest List")]
+                                       [fingerprint? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 7)))) "Fingerprint Ambassador")])
                                  (list bug? contact? transfer? swap? inspect? seduce? purloin? fingerprint?))]
-             [picked-missions (let* ([tempint (~> header
-                                                  (subbytes #x44 #x48)
-                                                  (integer-bytes->integer #f))]
-                                     [bug? (when (bitwise-and tempint (arithmetic-shift 1 0)) "Bug Ambassador")]
-                                     [contact? (when (bitwise-and tempint (arithmetic-shift 1 1)) "Contact Double Agent")]
-                                     [transfer? (when (bitwise-and tempint (arithmetic-shift 1 2)) "Transfer Microfilm")]
-                                     [swap? (when (bitwise-and tempint (arithmetic-shift 1 3)) "Swap Statue")]
-                                     [inspect? (when (bitwise-and tempint (arithmetic-shift 1 4)) "Inspect Statues")]
-                                     [seduce? (when (bitwise-and tempint (arithmetic-shift 1 5)) "Seduce Target")]
-                                     [purloin? (when (bitwise-and tempint (arithmetic-shift 1 6)) "Purloin Guest List")]
-                                     [fingerprint? (when (bitwise-and tempint (arithmetic-shift 1 7)) "Fingerprint Ambassador")])
+             [picked-missions (let* ([tempint (integer-bytes->integer (subbytes header #x44 #x48) #f)]
+                                     [bug? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 0)))) "Bug Ambassador")]
+                                     [contact? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 1)))) "Contact Double Agent")]
+                                     [transfer? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 2)))) "Transfer Microfilm")]
+                                     [swap? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 3)))) "Swap Statue")]
+                                     [inspect? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 4)))) "Inspect Statues")]
+                                     [seduce? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 5)))) "Seduce Target")]
+                                     [purloin? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 6)))) "Purloin Guest List")]
+                                     [fingerprint? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 7)))) "Fingerprint Ambassador")])
                                 (list bug? contact? transfer? swap? inspect? seduce? purloin? fingerprint?))]
-             [missions-completed (let* ([tempint (~> header
-                                                     (subbytes #x48 #x4C)
-                                                     (integer-bytes->integer #f))]
-                                        [bug? (when (bitwise-and tempint (arithmetic-shift 1 0)) "Bug Ambassador")]
-                                        [contact? (when (bitwise-and tempint (arithmetic-shift 1 1)) "Contact Double Agent")]
-                                        [transfer? (when (bitwise-and tempint (arithmetic-shift 1 2)) "Transfer Microfilm")]
-                                        [swap? (when (bitwise-and tempint (arithmetic-shift 1 3)) "Swap Statue")]
-                                        [inspect? (when (bitwise-and tempint (arithmetic-shift 1 4)) "Inspect Statues")]
-                                        [seduce? (when (bitwise-and tempint (arithmetic-shift 1 5)) "Seduce Target")]
-                                        [purloin? (when (bitwise-and tempint (arithmetic-shift 1 6)) "Purloin Guest List")]
-                                        [fingerprint? (when (bitwise-and tempint (arithmetic-shift 1 7)) "Fingerprint Ambassador")])
+             [completed-missions (let* ([tempint (integer-bytes->integer (subbytes header #x48 #x4C) #f)]
+                                        [bug? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 0)))) "Bug Ambassador")]
+                                        [contact? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 1)))) "Contact Double Agent")]
+                                        [transfer? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 2)))) "Transfer Microfilm")]
+                                        [swap? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 3)))) "Swap Statue")]
+                                        [inspect? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 4)))) "Inspect Statues")]
+                                        [seduce? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 5)))) "Seduce Target")]
+                                        [purloin? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 6)))) "Purloin Guest List")]
+                                        [fingerprint? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 7)))) "Fingerprint Ambassador")])
                                    (list bug? contact? transfer? swap? inspect? seduce? purloin? fingerprint?))]
              [game-type (if (equal? base-type "Known")
                             (~a base-type available)
@@ -273,7 +241,7 @@
          game-type
          selected-missions
          picked-missions
-         missions-completed
+         completed-missions
          spy-name
          #f
          sniper-name
@@ -331,66 +299,48 @@
                         [#"\4\0\0\0" "In-Progress"]
                         [#"\5\0\0\0" "Number of Results"]
                         [_ (error 'outcome filename)])]
-             [base-type (match (~> header
-                                   (subbytes #x3C #x40)
-                                   (integer-bytes->integer #f)
-                                   (arithmetic-shift -28))
+             [base-type (match (arithmetic-shift (integer-bytes->integer (subbytes header #x3C #x40) #f) -28)
                           [0 "k"]
                           [1 "p"]
                           [2 "a"]
                           [_ (error 'base-type filename)])]
-             [required (~> header
-                           (subbytes #x3C #x40)
-                           (integer-bytes->integer #f)
-                           (bitwise-and #x00003FFF))]
-             [available (~> header
-                            (subbytes #x3C #x40)
-                            (integer-bytes->integer #f)
-                            (bitwise-and #x0FFFC000)
-                            (arithmetic-shift -14))]
-             [selected-missions (let* ([tempint (~> header
-                                                   (subbytes #x48 #x4C)
-                                                   (integer-bytes->integer #f))]
-                                      [bug? (when (bitwise-and tempint (arithmetic-shift 1 0)) "Bug Ambassador")]
-                                      [contact? (when (bitwise-and tempint (arithmetic-shift 1 1)) "Contact Double Agent")]
-                                      [transfer? (when (bitwise-and tempint (arithmetic-shift 1 2)) "Transfer Microfilm")]
-                                      [swap? (when (bitwise-and tempint (arithmetic-shift 1 3)) "Swap Statue")]
-                                      [inspect? (when (bitwise-and tempint (arithmetic-shift 1 4)) "Inspect Statues")]
-                                      [seduce? (when (bitwise-and tempint (arithmetic-shift 1 5)) "Seduce Target")]
-                                      [purloin? (when (bitwise-and tempint (arithmetic-shift 1 6)) "Purloin Guest List")]
-                                      [fingerprint? (when (bitwise-and tempint (arithmetic-shift 1 7)) "Fingerprint Ambassador")])
+             [required (bitwise-and (integer-bytes->integer (subbytes header #x3C #x40) #f) #x00003FFF)]
+             [available (arithmetic-shift (bitwise-and (integer-bytes->integer (subbytes header #x3C #x40) #f) #x0FFFC000) -14)]
+             [selected-missions (let* ([tempint (integer-bytes->integer (subbytes header #x48 #x4C) #f)]
+                                       [bug? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 0)))) "Bug Ambassador")]
+                                       [contact? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 1)))) "Contact Double Agent")]
+                                       [transfer? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 2)))) "Transfer Microfilm")]
+                                       [swap? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 3)))) "Swap Statue")]
+                                       [inspect? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 4)))) "Inspect Statues")]
+                                       [seduce? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 5)))) "Seduce Target")]
+                                       [purloin? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 6)))) "Purloin Guest List")]
+                                       [fingerprint? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 7)))) "Fingerprint Ambassador")])
                                  (list bug? contact? transfer? swap? inspect? seduce? purloin? fingerprint?))]
-             [picked-missions (let* ([tempint (~> header
-                                                  (subbytes #x4C #x50)
-                                                  (integer-bytes->integer #f))]
-                                     [bug? (when (bitwise-and tempint (arithmetic-shift 1 0)) "Bug Ambassador")]
-                                     [contact? (when (bitwise-and tempint (arithmetic-shift 1 1)) "Contact Double Agent")]
-                                     [transfer? (when (bitwise-and tempint (arithmetic-shift 1 2)) "Transfer Microfilm")]
-                                     [swap? (when (bitwise-and tempint (arithmetic-shift 1 3)) "Swap Statue")]
-                                     [inspect? (when (bitwise-and tempint (arithmetic-shift 1 4)) "Inspect Statues")]
-                                     [seduce? (when (bitwise-and tempint (arithmetic-shift 1 5)) "Seduce Target")]
-                                     [purloin? (when (bitwise-and tempint (arithmetic-shift 1 6)) "Purloin Guest List")]
-                                     [fingerprint? (when (bitwise-and tempint (arithmetic-shift 1 7)) "Fingerprint Ambassador")])
+             [picked-missions (let* ([tempint (integer-bytes->integer (subbytes header #x4C #x50) #f)]
+                                     [bug? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 0)))) "Bug Ambassador")]
+                                     [contact? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 1)))) "Contact Double Agent")]
+                                     [transfer? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 2)))) "Transfer Microfilm")]
+                                     [swap? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 3)))) "Swap Statue")]
+                                     [inspect? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 4)))) "Inspect Statues")]
+                                     [seduce? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 5)))) "Seduce Target")]
+                                     [purloin? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 6)))) "Purloin Guest List")]
+                                     [fingerprint? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 7)))) "Fingerprint Ambassador")])
                                 (list bug? contact? transfer? swap? inspect? seduce? purloin? fingerprint?))]
-             [missions-completed (let* ([tempint (~> header
-                                                     (subbytes #x50 #x54)
-                                                     (integer-bytes->integer #f))]
-                                        [bug? (when (bitwise-and tempint (arithmetic-shift 1 0)) "Bug Ambassador")]
-                                        [contact? (when (bitwise-and tempint (arithmetic-shift 1 1)) "Contact Double Agent")]
-                                        [transfer? (when (bitwise-and tempint (arithmetic-shift 1 2)) "Transfer Microfilm")]
-                                        [swap? (when (bitwise-and tempint (arithmetic-shift 1 3)) "Swap Statue")]
-                                        [inspect? (when (bitwise-and tempint (arithmetic-shift 1 4)) "Inspect Statues")]
-                                        [seduce? (when (bitwise-and tempint (arithmetic-shift 1 5)) "Seduce Target")]
-                                        [purloin? (when (bitwise-and tempint (arithmetic-shift 1 6)) "Purloin Guest List")]
-                                        [fingerprint? (when (bitwise-and tempint (arithmetic-shift 1 7)) "Fingerprint Ambassador")])
+             [completed-missions (let* ([tempint (integer-bytes->integer (subbytes header #x50 #x54) #f)]
+                                        [bug? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 0)))) "Bug Ambassador")]
+                                        [contact? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 1)))) "Contact Double Agent")]
+                                        [transfer? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 2)))) "Transfer Microfilm")]
+                                        [swap? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 3)))) "Swap Statue")]
+                                        [inspect? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 4)))) "Inspect Statues")]
+                                        [seduce? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 5)))) "Seduce Target")]
+                                        [purloin? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 6)))) "Purloin Guest List")]
+                                        [fingerprint? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 7)))) "Fingerprint Ambassador")])
                                    (list bug? contact? transfer? swap? inspect? seduce? purloin? fingerprint?))]
              [game-type (if (equal? base-type "Known")
                             (~a base-type available)
                             (~a base-type required "/" available))]
              [venue (get-venue (subbytes header #x40 (+ 4 #x40)))]
-             [guest-count (~> header
-                              (subbytes #x50 #x54)
-                              (integer-bytes->integer #f))])
+             [guest-count (integer-bytes->integer (subbytes header #x50 #x54) #f)])
         (replay
          filename
          (integer-bytes->integer file-version #f)
@@ -403,7 +353,7 @@
          game-type
          selected-missions
          picked-missions
-         missions-completed
+         completed-missions
          spy-username
          spy-displayname
          sniper-username
@@ -461,65 +411,45 @@
                         [#"\4\0\0\0" "In-Progress"]
                         [#"\5\0\0\0" "Number of Results"]
                         [_ (error 'outcome filename)])]
-             [base-type (match (~> header
-                                   (subbytes #x3C #x40)
-                                   (integer-bytes->integer #f)
-                                   (arithmetic-shift -28))
+             [base-type (match (arithmetic-shift (integer-bytes->integer (subbytes header #x3C #x40) #f) -28)
                           [0 "k"]
                           [1 "p"]
                           [2 "a"]
                           [_ (error 'base-type filename)])]
-             [required (~> header
-                           (subbytes #x3C #x40)
-                           (integer-bytes->integer #f)
-                           (bitwise-and #x00003FFF))]
-             [available (~> header
-                            (subbytes #x3C #x40)
-                            (integer-bytes->integer #f)
-                            (bitwise-and #x0FFFC000)
-                            (arithmetic-shift -14))]
-             [selected-missions (let* ([tempint (~> header
-                                                   (subbytes #x48 #x4C)
-                                                   (integer-bytes->integer #f))]
-                                      [bug? (when (bitwise-and tempint (arithmetic-shift 1 0)) "Bug Ambassador")]
-                                      [contact? (when (bitwise-and tempint (arithmetic-shift 1 1)) "Contact Double Agent")]
-                                      [transfer? (when (bitwise-and tempint (arithmetic-shift 1 2)) "Transfer Microfilm")]
-                                      [swap? (when (bitwise-and tempint (arithmetic-shift 1 3)) "Swap Statue")]
-                                      [inspect? (when (bitwise-and tempint (arithmetic-shift 1 4)) "Inspect Statues")]
-                                      [seduce? (when (bitwise-and tempint (arithmetic-shift 1 5)) "Seduce Target")]
-                                      [purloin? (when (bitwise-and tempint (arithmetic-shift 1 6)) "Purloin Guest List")]
-                                      [fingerprint? (when (bitwise-and tempint (arithmetic-shift 1 7)) "Fingerprint Ambassador")])
+             [required (bitwise-and (integer-bytes->integer (subbytes header #x3C #x40) #f) #x00003FFF)]
+             [available (arithmetic-shift (bitwise-and (integer-bytes->integer (subbytes header #x3C #x40) #f) #x0FFFC000) -14)]
+             [selected-missions (let* ([tempint (integer-bytes->integer (subbytes header #x48 #x4C) #f)]
+                                       [bug? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 0)))) "Bug Ambassador")]
+                                       [contact? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 1)))) "Contact Double Agent")]
+                                       [transfer? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 2)))) "Transfer Microfilm")]
+                                       [swap? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 3)))) "Swap Statue")]
+                                       [inspect? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 4)))) "Inspect Statues")]
+                                       [seduce? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 5)))) "Seduce Target")]
+                                       [purloin? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 6)))) "Purloin Guest List")]
+                                       [fingerprint? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 7)))) "Fingerprint Ambassador")])
                                  (list bug? contact? transfer? swap? inspect? seduce? purloin? fingerprint?))]
-             [picked-missions (let* ([tempint (~> header
-                                                  (subbytes #x4C #x50)
-                                                  (integer-bytes->integer #f))]
-                                     [bug? (when (bitwise-and tempint (arithmetic-shift 1 0)) "Bug Ambassador")]
-                                     [contact? (when (bitwise-and tempint (arithmetic-shift 1 1)) "Contact Double Agent")]
-                                     [transfer? (when (bitwise-and tempint (arithmetic-shift 1 2)) "Transfer Microfilm")]
-                                     [swap? (when (bitwise-and tempint (arithmetic-shift 1 3)) "Swap Statue")]
-                                     [inspect? (when (bitwise-and tempint (arithmetic-shift 1 4)) "Inspect Statues")]
-                                     [seduce? (when (bitwise-and tempint (arithmetic-shift 1 5)) "Seduce Target")]
-                                     [purloin? (when (bitwise-and tempint (arithmetic-shift 1 6)) "Purloin Guest List")]
-                                     [fingerprint? (when (bitwise-and tempint (arithmetic-shift 1 7)) "Fingerprint Ambassador")])
+             [picked-missions (let* ([tempint (integer-bytes->integer (subbytes header #x4C #x50) #f)]
+                                     [bug? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 0)))) "Bug Ambassador")]
+                                     [contact? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 1)))) "Contact Double Agent")]
+                                     [transfer? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 2)))) "Transfer Microfilm")]
+                                     [swap? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 3)))) "Swap Statue")]
+                                     [inspect? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 4)))) "Inspect Statues")]
+                                     [seduce? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 5)))) "Seduce Target")]
+                                     [purloin? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 6)))) "Purloin Guest List")]
+                                     [fingerprint? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 7)))) "Fingerprint Ambassador")])
                                 (list bug? contact? transfer? swap? inspect? seduce? purloin? fingerprint?))]
-             [missions-completed (let* ([tempint (~> header
-                                                     (subbytes #x50 #x54)
-                                                     (integer-bytes->integer #f))]
-                                        [bug? (when (bitwise-and tempint (arithmetic-shift 1 0)) "Bug Ambassador")]
-                                        [contact? (when (bitwise-and tempint (arithmetic-shift 1 1)) "Contact Double Agent")]
-                                        [transfer? (when (bitwise-and tempint (arithmetic-shift 1 2)) "Transfer Microfilm")]
-                                        [swap? (when (bitwise-and tempint (arithmetic-shift 1 3)) "Swap Statue")]
-                                        [inspect? (when (bitwise-and tempint (arithmetic-shift 1 4)) "Inspect Statues")]
-                                        [seduce? (when (bitwise-and tempint (arithmetic-shift 1 5)) "Seduce Target")]
-                                        [purloin? (when (bitwise-and tempint (arithmetic-shift 1 6)) "Purloin Guest List")]
-                                        [fingerprint? (when (bitwise-and tempint (arithmetic-shift 1 7)) "Fingerprint Ambassador")])
+             [completed-missions (let* ([tempint (integer-bytes->integer (subbytes header #x50 #x54) #f)]
+                                        [bug? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 0)))) "Bug Ambassador")]
+                                        [contact? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 1)))) "Contact Double Agent")]
+                                        [transfer? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 2)))) "Transfer Microfilm")]
+                                        [swap? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 3)))) "Swap Statue")]
+                                        [inspect? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 4)))) "Inspect Statues")]
+                                        [seduce? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 5)))) "Seduce Target")]
+                                        [purloin? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 6)))) "Purloin Guest List")]
+                                        [fingerprint? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 7)))) "Fingerprint Ambassador")])
                                    (list bug? contact? transfer? swap? inspect? seduce? purloin? fingerprint?))]
-             [guest-count (~> header
-                              (subbytes #x54 #x58)
-                              (integer-bytes->integer #f))]
-             [start-duration (~> header
-                                 (subbytes #x58 (+ 4 #x58))
-                                 (integer-bytes->integer #f))]
+             [guest-count (integer-bytes->integer (subbytes header #x54 #x58) #f)]
+             [start-duration (integer-bytes->integer (subbytes header #x58 (+ 4 #x58)) #f)]
              [game-type (if (equal? base-type "Known")
                             (~a base-type available)
                             (~a base-type required "/" available))]
@@ -539,7 +469,7 @@
          game-type
          selected-missions
          picked-missions
-         missions-completed
+         completed-missions
          spy-username
          spy-displayname
          sniper-username
