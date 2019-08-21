@@ -16,7 +16,7 @@
 (date-display-format 'rfc2822)
 
 ; Create the main window
-(define main-frame (new frame% [label "SpyParty Replay Parser"] [min-width 1000] [min-height 900]))
+(define main-frame (new frame% [label "SpyParty Replay Viewer"] [min-width 1000] [min-height 900]))
 (send main-frame center 'both)
 
 ; Behind the scenes
@@ -403,6 +403,26 @@
                                                                                             " ± "
                                                                                             (~r (player-rd (cdr x)) #:precision 0))
                                                                                         y)) '() sorted))))]
+                                                     [(list 'list-box-column 1)
+                                                      (if (vector-ref modal12 0)
+                                                          (let ([sorted (sort (hash->list players) < #:key (lambda (x) (player-r (cdr x))))])
+                                                            (vector-set! modal12 0 #f)
+                                                            (set! current-shown sorted)
+                                                            (send l-box set
+                                                                  (foldl (lambda (x y) (cons (car x) y)) '() sorted)
+                                                                  (foldl (lambda (x y) (cons (~a (~r (player-r (cdr x)) #:precision 0)
+                                                                                            " ± "
+                                                                                            (~r (player-rd (cdr x)) #:precision 0))
+                                                                                        y)) '() sorted)))
+                                                          (let ([sorted (sort (hash->list players) > #:key (lambda (x) (player-r (cdr x))))])
+                                                            (vector-set! modal12 0 #t)
+                                                            (set! current-shown sorted)
+                                                            (send l-box set
+                                                                  (foldl (lambda (x y) (cons (car x) y)) '() sorted)
+                                                                  (foldl (lambda (x y) (cons (~a (~r (player-r (cdr x)) #:precision 0)
+                                                                                            " ± "
+                                                                                            (~r (player-rd (cdr x)) #:precision 0))
+                                                                                        y)) '() sorted))))]
                                                      [(list 'list-box-dclick _)
                                                       (begin
                                                         (define really-temp-frame (new frame%
@@ -439,81 +459,87 @@
                                                         (send really-temp-frame center 'both)
                                                         (send text insert
                                                               (apply ~a (cons
-                                                                         (let loop ([t (filter (lambda (x) (= 2 (car x)))
-                                                                                               (reverse (hash-ref player-history
-                                                                                                                  (car (list-ref current-shown
-                                                                                                                                 (- (length current-shown)
-                                                                                                                                    (car (send list-box get-selections))
-                                                                                                                                    1))))))]
-                                                                                    [spy-wins 0]
-                                                                                    [sniper-wins 0]
-                                                                                    [spy-games 0]
-                                                                                    [sniper-games 0]
-                                                                                    [total-games 0])
-                                                                           (if (empty? t)
-                                                                               (~a "Won "
-                                                                                   (+ spy-wins sniper-wins)
-                                                                                   " out of "
-                                                                                   total-games
-                                                                                   " games ("
-                                                                                   (~r (/ (+ spy-wins sniper-wins) total-games) #:precision 2)
-                                                                                   "%)\n"
-                                                                                   "Spy: "
-                                                                                   spy-wins
-                                                                                   " out of "
-                                                                                   spy-games
-                                                                                   " ("
-                                                                                   (~r (/ spy-wins spy-games) #:precision 2)
-                                                                                   "%)\n"
-                                                                                   "Sniper: "
-                                                                                   sniper-wins
-                                                                                   " out of "
-                                                                                   sniper-games
-                                                                                   " ("
-                                                                                   (~r (/ sniper-wins sniper-games) #:precision 2)
-                                                                                   "%)\r\n")
-                                                                               (loop (rest t)
-                                                                                     (if (and (equal? 'spy (cadddr (first t)))
-                                                                                              (equal? 'Won (caddr (first t))))
-                                                                                         (+ 1 spy-wins)
-                                                                                         spy-wins)
-                                                                                     (if (and (equal? 'sniper (cadddr (first t)))
-                                                                                              (equal? 'Won (caddr (first t))))
-                                                                                         (+ 1 sniper-wins)
-                                                                                         sniper-wins)
-                                                                                     (if (equal? 'spy (cadddr (first t))) (+ 1 spy-games) spy-games)
-                                                                                     (if (equal? 'sniper (cadddr (first t))) (+ 1 sniper-games) sniper-games)
-                                                                                     (+ 1 total-games))))
-                                                                         (for/list ([e (in-list (reverse (hash-ref player-history (car (list-ref current-shown (- (length current-shown) (car (send list-box get-selections)) 1))))))])
-                                                                           (match (first e)
-                                                                             [0 (~a "Updated "
-                                                                                    (date->string (seconds->date (cadr e)) #t)
+                                                                         (~a "User '" (car (list-ref current-shown
+                                                                                            (- (length current-shown)
+                                                                                               (car (send list-box get-selections))
+                                                                                               1)))
+                                                                             "'\n")
+                                                                         (cons
+                                                                          (let loop ([t (filter (lambda (x) (= 2 (car x)))
+                                                                                                (reverse (hash-ref player-history
+                                                                                                                   (car (list-ref current-shown
+                                                                                                                                  (- (length current-shown)
+                                                                                                                                     (car (send list-box get-selections))
+                                                                                                                                     1))))))]
+                                                                                     [spy-wins 0]
+                                                                                     [sniper-wins 0]
+                                                                                     [spy-games 0]
+                                                                                     [sniper-games 0]
+                                                                                     [total-games 0])
+                                                                            (if (empty? t)
+                                                                                (~a "Won "
+                                                                                    (+ spy-wins sniper-wins)
+                                                                                    " out of "
+                                                                                    total-games
+                                                                                    " games ("
+                                                                                    (~r (/ (+ spy-wins sniper-wins) total-games) #:precision 2)
+                                                                                    "%)\n"
+                                                                                    "Spy: "
+                                                                                    spy-wins
+                                                                                    " out of "
+                                                                                    spy-games
                                                                                     " ("
-                                                                                    (caddr e)
-                                                                                    " "
-                                                                                    (cadddr e)
-                                                                                    " "
-                                                                                    (car (cddddr e))
-                                                                                    ")\n")]
-                                                                             [1 (~a "Created " (date->string (seconds->date (cadr e)) #t) " ("
-                                                                                    (caddr e)
-                                                                                    " "
-                                                                                    (cadddr e)
-                                                                                    " "
-                                                                                    (car (cddddr e))
-                                                                                    ")\n")]
-                                                                             [2 (~a (caddr e)
-                                                                                    " as "
-                                                                                    (cadddr e)
-                                                                                    " versus "
-                                                                                    (list-ref e 4)
+                                                                                    (~r (/ spy-wins spy-games) #:precision 2)
+                                                                                    "%)\n"
+                                                                                    "Sniper: "
+                                                                                    sniper-wins
+                                                                                    " out of "
+                                                                                    sniper-games
                                                                                     " ("
-                                                                                    (list-ref e 5)
-                                                                                    " "
-                                                                                    (list-ref e 6)
-                                                                                    " "
-                                                                                    (list-ref e 7)
-                                                                                    ")\n")]))))))]
+                                                                                    (~r (/ sniper-wins sniper-games) #:precision 2)
+                                                                                    "%)\r\n")
+                                                                                (loop (rest t)
+                                                                                      (if (and (equal? 'spy (cadddr (first t)))
+                                                                                               (equal? 'Won (caddr (first t))))
+                                                                                          (+ 1 spy-wins)
+                                                                                          spy-wins)
+                                                                                      (if (and (equal? 'sniper (cadddr (first t)))
+                                                                                               (equal? 'Won (caddr (first t))))
+                                                                                          (+ 1 sniper-wins)
+                                                                                          sniper-wins)
+                                                                                      (if (equal? 'spy (cadddr (first t))) (+ 1 spy-games) spy-games)
+                                                                                      (if (equal? 'sniper (cadddr (first t))) (+ 1 sniper-games) sniper-games)
+                                                                                      (+ 1 total-games))))
+                                                                          (for/list ([e (in-list (reverse (hash-ref player-history (car (list-ref current-shown (- (length current-shown) (car (send list-box get-selections)) 1))))))])
+                                                                            (match (first e)
+                                                                              [0 (~a "Updated "
+                                                                                     (date->string (seconds->date (cadr e)) #t)
+                                                                                     " ("
+                                                                                     (caddr e)
+                                                                                     " "
+                                                                                     (cadddr e)
+                                                                                     " "
+                                                                                     (car (cddddr e))
+                                                                                     ")\n")]
+                                                                              [1 (~a "Created " (date->string (seconds->date (cadr e)) #t) " ("
+                                                                                     (caddr e)
+                                                                                     " "
+                                                                                     (cadddr e)
+                                                                                     " "
+                                                                                     (car (cddddr e))
+                                                                                     ")\n")]
+                                                                              [2 (~a (caddr e)
+                                                                                     " as "
+                                                                                     (cadddr e)
+                                                                                     " versus "
+                                                                                     (list-ref e 4)
+                                                                                     " ("
+                                                                                     (list-ref e 5)
+                                                                                     " "
+                                                                                     (list-ref e 6)
+                                                                                     " "
+                                                                                     (list-ref e 7)
+                                                                                     ")\n")])))))))]
                                                      [(list _ _) null])))]))
                                        (send l-box set-column-width 0 350 0 10000)
                                        (send l-box set-column-width 1 350 0 10000)
@@ -530,6 +556,7 @@
 
 
 (define modal11 (vector #t))
+(define modal12 (vector #t))
 
 (define filter-menu (new menu% [label "Filter"] [parent menu-bar]))
 (define filter-submenu (new menu-item% [label "Filter"] [parent filter-menu]
@@ -642,8 +669,16 @@
                                                                                          "~Y-~m-~dT~H:~M:~S")]
                                                                 ['rfc2822 (string->date s
                                                                                         "~a, ~d ~b ~Y ~H:~M:~S ~z")]))]
-                                                [start-time (parse-date (send filter-time1 get-value))]
-                                                [end-time (parse-date (send filter-time2 get-value))]
+                                                [start-time (with-handlers ([exn:fail? (lambda (e) (begin
+                                                                                           (message-box "Error!"
+                                                                                                        "Bad date string in the start-time slot. If you're filling out a custom date, make sure to exactly follow the chosen date format.")
+                                                                                           (seconds->date 0)))])
+                                                              (parse-date (send filter-time1 get-value)))]
+                                                [end-time (with-handlers ([exn:fail? (lambda (e) (begin
+                                                                                         (message-box "Error!"
+                                                                                                      "Bad date string in the end-time slot. If you're filling out a custom date, make sure to exactly follow the chosen date format.")
+                                                                                         (current-date)))])
+                                                             (parse-date (send filter-time2 get-value)))]
                                                 [temp-filter (λ (a)
                                                                (and
                                                                 (cond
