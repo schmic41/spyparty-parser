@@ -1,1 +1,0 @@
-# spyparty-parser
