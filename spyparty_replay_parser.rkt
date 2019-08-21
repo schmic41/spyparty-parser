@@ -232,13 +232,6 @@
                                        (end-busy-cursor))))
                          [shortcut-prefix (list 'ctl)]
                          [shortcut #\D]))
-(define reset (new menu-item% [label "Reset"] [parent filter-menu]
-                   [shortcut-prefix (list 'ctl)]
-                   [shortcut #\R]
-                   [callback (lambda (parent date-menu)
-                               (send replay-select set null null null null null)
-                               (set! *temp-replay-vector* *master-replay-vector*)
-                               (send-all-replays *temp-replay-vector*))]))
 
 (define stats (new menu% [parent menu-bar] [label "Stats"]))
 (define modal1 (vector #t))
@@ -707,6 +700,13 @@
                                              (send-all-replays *temp-replay-vector*))
                                            (end-busy-cursor))))))
                                (send filter-menu show #t))]))
+(define reset (new menu-item% [label "Reset"] [parent filter-menu]
+                   [shortcut-prefix (list 'ctl)]
+                   [shortcut #\R]
+                   [callback (lambda (parent date-menu)
+                               (send replay-select set null null null null null)
+                               (set! *temp-replay-vector* *master-replay-vector*)
+                               (send-all-replays *temp-replay-vector*))]))
 
 (define date-menu (new menu% (label "Date") (parent menu-bar)))
 (define (helper-callback s)
