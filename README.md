@@ -1,6 +1,6 @@
 # The SpyParty Replay Viewer
 
-This is a GUI-based utility for examining and analyzing sets of SpyParty replay files. It attempts to be a combination of the [SCL Replay Tool][https://www.spypartyfans.com/gamefinder.php] (written by LtHummus and AForgottenTune), [SpyParsey][https://github.com/adamransom/spyparsey] (written by plastikqs), and pwndnoob's ELO spreadsheet.
+This is a GUI-based utility for examining and analyzing sets of SpyParty replay files. It attempts to be a combination of the [SCL Replay Tool](https://www.spypartyfans.com/gamefinder.php) (written by LtHummus and AForgottenTune), [SpyParsey](https://github.com/adamransom/spyparsey) (written by plastikqs), and pwndnoob's ELO spreadsheet.
 
 # How to Use
 
@@ -10,7 +10,7 @@ Once the files have been parsed, a list of synopses will appear in the main wind
 
 The "Filter" menu opens a dialog to filter by pertinent features, including start date, players, and venues. Dates used in the filter must be in the appropriate format. To undo any active filters, use the "Reset" option.
 
-The replay viewer includes a function that will run the [Glicko-2][http://www.glicko.net/glicko.html] rating algorithm on all active replays. The Glicko-2 algorithm is similar to the familiar ELO algorithm, but includes several improvements (such as deviation and variability). All Glicko-2 ratings are presented as confidence intervals. To run this analysis, select the "Run Stats" option in the stats menu. A window with a list of all players will appear; double click any player to view their complete match history and rating updates. Inside this sub-window, selecting "Plot" from the "Plot" menu will graph the confidence intervals of the player over time.
+The replay viewer includes a function that will run the [Glicko-2](http://www.glicko.net/glicko.html) rating algorithm on all active replays. The Glicko-2 algorithm is similar to the familiar ELO algorithm, but includes several improvements (such as deviation and variability). All Glicko-2 ratings are presented as confidence intervals. To run this analysis, select the "Run Stats" option in the stats menu. A window with a list of all players will appear; double click any player to view their complete match history and rating updates. Inside this sub-window, selecting "Plot" from the "Plot" menu will graph the confidence intervals of the player over time.
 
 # Current State
 
@@ -24,7 +24,7 @@ Special thanks to checker, for being kind enough to document the replay header f
 
 # Build
 
-If you would like to build the binary from scratch, clone the source repository. Compiling requires the [Racket programming language][https://racket-lang.org/], version 7.4 Regular.
+If you would like to build the binary from scratch, clone the source repository. Compiling requires the [Racket programming language](https://racket-lang.org/), version 7.4 Regular.
 
 Three build scripts are provided: one for Windows, one for Mac, and one for Linux. The Windows binary has been tested;and is included; the Mac and Linux binaries should work but I have not been able to test them.
 
