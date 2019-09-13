@@ -26,6 +26,6 @@ Special thanks to checker, for being kind enough to document the replay header f
 
 If you would like to build the binary from scratch, clone the source repository. Compiling requires the [Racket programming language](https://racket-lang.org/), version 7.4 Regular.
 
-Three build scripts are provided: one for Windows, one for Mac, and one for Linux. The Windows binary has been tested;and is included; the Mac and Linux binaries should work but I have not been able to test them.
+Three build scripts are provided: one for Windows, one for Mac, and one for Linux. The Windows binary has been tested and is included; the Mac and Linux binaries should work but I have not been able to test them.
 
 The source code is licensed under the GPL v3.
