@@ -1,12 +1,14 @@
 #lang racket
 
-; TODO: Add map and selected mission support
-
 (require racket/match)
 
 (provide (struct-out replay) (struct-out exception) parse-game)
 
 ;;;
+
+; TODO: unify all replay structs with nullable fields
+
+; TODO: fix weird custom exception
 
 (struct exception (type info))
 
@@ -77,6 +79,7 @@
     [#xe6146120 "Modern"]
     [4091941985 "Modern"]
     [#x35ac5135 "Redwoods"]
+    ; Format as integer and return it
     [_ (~a (integer-bytes->integer bytes #f))]))
 
 ;;;

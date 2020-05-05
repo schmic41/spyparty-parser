@@ -8,8 +8,6 @@
 (define e euler.0)
 ;(define τ 0.4)
 
-;(struct glicko (r rd σ op-name op-r op-rd outcomes) #:transparent)
-
 (struct player (r rd σ op-name op-r op-rd outcomes) #:transparent)
 
 (define (glicko player-struct [τ 0.8])
