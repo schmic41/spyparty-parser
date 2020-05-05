@@ -4,13 +4,13 @@ This is a GUI utility for examining and analyzing sets of SpyParty replay files.
 
 # How to Use
 
-To begin, open a single replay or group of replays. The "Open File" dialog allows for manual selections of .replay files; holding ctrl+click allows for multiple file selections. The "Open Directory" dialog will search the selected directory for all .replay files automatically.
+To begin, open a single replay or group of replays. "Open File" lets you manually select .replay files. Holding ctrl+click selects multiple files. "Open Directory" will search the selected directory for all .replay files automatically.
 
-Once the files have been parsed, a list of synopses will appear in the main window. Double click on a replay to see the full results. Click any column header to sort the list by the appropriate feature. The format for date/time can be changed via the "Date" menu.
+Once the files have been parsed, all of the results will appear in the main window. Double click on a replay to see a full summary. Click any column header to sort the list by the header label. The format for date/time can be changed in the "Date" menu.
 
-The "Filter" menu opens a dialog to filter by pertinent features, including start date, players, and venues. Dates used in the filter must be in the appropriate format. To undo any active filters, use the "Reset" option.
+"Filter" opens a dialog to filter by replay features, including start date, players, and venues. Any dates used in the filter must be in the appropriate format. To undo any active filters, use the "Reset" option.
 
-The replay viewer includes a function that will run the [Glicko-2](http://www.glicko.net/glicko.html) rating algorithm on all active replays. The Glicko-2 algorithm is similar to the familiar ELO algorithm, but includes several improvements (such as deviation and variability). All Glicko-2 ratings are presented as confidence intervals. To run this analysis, select the "Run Stats" option in the stats menu. A window with a list of all players will appear; double click any player to view their complete match history and rating updates. Inside this sub-window, selecting "Plot" from the "Plot" menu will graph the confidence intervals of the player over time.
+The replay viewer allows you to run the [Glicko-2](http://www.glicko.net/glicko.html) rating algorithm on all visible replays. Glicko-2 is similar to ELO, but includes several improvements (including deviation and volatility). All Glicko-2 ratings are presented as confidence intervals. To run this analysis, select the "Run Stats" option in the stats menu. A window with a list of all players will appear. Double click any player to view their complete match history and rating updates. Inside this sub-window, selecting "Plot" from the "Plot" menu will graph the confidence intervals of the player over time.
 
 # Current State
 
