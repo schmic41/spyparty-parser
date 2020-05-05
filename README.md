@@ -1,6 +1,6 @@
 # The SpyParty Replay Viewer
 
-This is a GUI-based utility for examining and analyzing sets of SpyParty replay files. It attempts to be a combination of the [SCL Replay Tool](https://www.spypartyfans.com/gamefinder.php) (written by LtHummus and AForgottenTune), [SpyParsey](https://github.com/adamransom/spyparsey) (written by plastikqs), and pwndnoob's ELO spreadsheet.
+This is a GUI utility for examining and analyzing sets of SpyParty replay files. It is a combination of the [SCL Replay Tool](https://www.spypartyfans.com/gamefinder.php) (written by LtHummus and AForgottenTune), [SpyParsey](https://github.com/adamransom/spyparsey) (written by plastikqs), and pwndnoob's ELO spreadsheet.
 
 # How to Use
 
@@ -14,18 +14,18 @@ The replay viewer includes a function that will run the [Glicko-2](http://www.gl
 
 # Current State
 
-Currently, the Replay Viewer is fully operational and should be relatively bug-free. The quality of the interface and presentation of data are generally poor. A rewrite in a different GUI system may be necessary to improve this; at that stage, additional stats and filter options (similar to those in SpyParsey and the SCL Replay Tool, respectively) will be added.
+Currently, the Replay Viewer is fully operational and should be relatively bug-free.
 
 If you encounter any bugs, please provide the error message that appears as well as the steps necessary to reproduce the error.
 
 # Thanks
 
-Special thanks to checker, for being kind enough to document the replay header format, and for LtHummus for his SpyParty Replay Parser Tool in Python, which I used as a reference when hunting down some bad bugs.
+Thanks to checker, for documenting the replay header format, and to LtHummus for his SpyParty Replay Parser Tool in Python, which I used as a reference when hunting down some bad bugs.
 
 # Build
 
-If you would like to build the binary from scratch, clone the source repository. Compiling requires the [Racket programming language](https://racket-lang.org/), version 7.4 Regular.
+If you would like to build the binary from scratch, clone the source repository. Compiling requires the [Racket programming language](https://racket-lang.org/), version 7.7 Regular or CS. It should work with earlier versions, but has not been tested.
 
-Three build scripts are provided: one for Windows, one for Mac, and one for Linux. The Windows binary has been tested and is included; the Mac and Linux binaries should work but I have not been able to test them.
+Three build scripts are provided: one for Windows, one for Mac, and one for Linux. The Windows binary has been tested and is included; the Mac and Linux binaries have not yet been tested.
 
-The source code is licensed under the GPL v3.
+The source code is licensed under the MIT license.

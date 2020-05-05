@@ -76,6 +76,7 @@
     [#x7076e38f "Double Modern"]
     [#xe6146120 "Modern"]
     [4091941985 "Modern"]
+    [#x35ac5135 "Redwoods"]
     [_ (~a (integer-bytes->integer bytes #f))]))
 
 ;;;
