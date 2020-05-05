@@ -28,6 +28,4 @@ If you would like to build the binary from scratch, clone the source repository.
 
 Three build scripts are provided: one for Windows, one for Mac, and one for Linux. The Windows binary has been tested and is included; the Mac and Linux binaries have not yet been tested.
 
-To run the Windows binary, navigate into the "SpyParty_Replay_Viewer_Windows" folder, and run "SpyParty_Replay_Viewer.exe".
-
 The source code is released under the MIT license.

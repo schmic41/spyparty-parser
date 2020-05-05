@@ -10,7 +10,6 @@
 (require net/base64)
 (require racket/stream)
 (require plot)
-; Dual Apache 2.0/MIT
 (require (only-in srfi/19 string->date))
 
 ; Default for date->string
@@ -483,14 +482,14 @@
                                                                                     " out of "
                                                                                     spy-games
                                                                                     " ("
-                                                                                    (~r (if (zero? spy-games) 0 (/ spy-wins spy-games)) #:precision 2)
+                                                                                    (~r (/ spy-wins spy-games) #:precision 2)
                                                                                     "%)\n"
                                                                                     "Sniper: "
                                                                                     sniper-wins
                                                                                     " out of "
                                                                                     sniper-games
                                                                                     " ("
-                                                                                    (~r (if (zero? sniper-games) 0 (/ sniper-wins sniper-games)) #:precision 2)
+                                                                                    (~r (/ sniper-wins sniper-games) #:precision 2)
                                                                                     "%)\r\n")
                                                                                 (loop (rest t)
                                                                                       (if (and (equal? 'spy (cadddr (first t)))
@@ -610,8 +609,7 @@
                                                                       "Old-Art Ballroom"
                                                                       "Old-Art Courtyard 1"
                                                                       "Double Modern"
-                                                                      "Modern"
-                                                                      "Redwoods"))))
+                                                                      "Modern"))))
                                (define filter-time1 (new text-field%
                                                          [label " between  "]
                                                          [parent layout-frame]
@@ -656,8 +654,7 @@
                                                                         "Old-Art Ballroom"
                                                                         "Old-Art Courtyard 1"
                                                                         "Double Modern"
-                                                                        "Modern"
-                                                                        "Redwoods")
+                                                                        "Modern")
                                                                        i)))]
                                                 [parse-date (lambda (s)
                                                               (match (date-display-format)
