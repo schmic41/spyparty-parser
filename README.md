@@ -24,8 +24,8 @@ Thanks to checker, for documenting the replay header format, and to LtHummus for
 
 # Build
 
-If you would like to build the binary from scratch, clone the source repository. Compiling requires the [Racket programming language](https://racket-lang.org/), version 7.7 Regular or CS. It should work with earlier versions, but has not been tested.
+If you would like to build the binary from scratch, clone the source repository. Compiling requires the [Racket programming language](https://racket-lang.org/), version 7.7 Regular or CS. It should work with earlier versions.
 
-Three build scripts are provided: one for Windows, one for Mac, and one for Linux. The Windows binary has been tested and is included; the Mac and Linux binaries have not yet been tested.
+Three build scripts are provided: one for Windows, one for Mac, and one for Linux. The Windows binary has been tested, the Mac and Linux binaries have not.
 
 The source code is released under the MIT license.
