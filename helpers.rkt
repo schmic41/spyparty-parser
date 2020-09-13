@@ -33,8 +33,8 @@
                    [bad '()])
           (if (empty? z)
               (match y
-                [(exception 'file-version _) (list good (cons (exception-info y) bad))]
-                [(exception 'file-not-valid _) (list good (cons (exception-info y) bad))]
+                [(exception 'file-version _) (values good (cons (exception-info y) bad))]
+                [(exception 'file-not-valid _) (values good (cons (exception-info y) bad))]
                 [_ (values (cons y good) bad)])
               (match y
                 [(exception 'file-version _) (loop (first z) (rest z) good (cons (exception-info y) bad))]
@@ -49,8 +49,8 @@
                [bad '()])
       (if (empty? z)
           (match y
-            [(exception 'file-version _) (list good (cons (exception-info y) bad))]
-            [(exception 'file-not-valid _) (list good (cons (exception-info y) bad))]
+            [(exception 'file-version _) (values good (cons (exception-info y) bad))]
+            [(exception 'file-not-valid _) (values good (cons (exception-info y) bad))]
             [_ (values (cons y good) bad)])
           (match y
             [(exception 'file-version _) (loop (first z) (rest z) good (cons (exception-info y) bad))]

@@ -1,5 +1,6 @@
-#lang racket/gui
+#lang racket/base
 
+(require racket/gui)
 (require "helpers.rkt")
 (require "parser.rkt")
 (require "glicko.rkt")
@@ -86,90 +87,92 @@
 (define *temp-replay-vector* null)
 (define default-columns (vector 0 0 0 0 0)) ; Modalty for sort order
 
+(define replay-select-callback
+  (lambda (list-box control-event)
+    (let* ([event-type (send control-event get-event-type)]
+           ; Wraparound when to avoid errors on single click
+           [c (if (equal? event-type 'list-box)
+                  null
+                  (if (equal? event-type 'list-box-dclick)
+                      (send list-box get-selections)
+                      (send control-event get-column)))])
+      (match (list event-type c)
+        [(list 'list-box-column 0)
+         (if (= 0 (vector-ref default-columns c))
+             (begin
+               (vector-set! default-columns c 1)
+               (set! *temp-replay-vector* (vector-sort *temp-replay-vector* string>?
+                                                       #:key get-spy-name))
+               (send-all-replays *temp-replay-vector*))
+             (begin
+               (vector-set! default-columns c 0)
+               (set! *temp-replay-vector* (vector-sort *temp-replay-vector* string<?
+                                                       #:key get-spy-name))
+               (send-all-replays *temp-replay-vector*)))]
+        [(list 'list-box-column 1)
+         (if (= 0 (vector-ref default-columns c))
+             (begin
+               (vector-set! default-columns c 1)
+               (set! *temp-replay-vector*
+                     (vector-sort *temp-replay-vector* string>?
+                                  #:key get-sniper-name))
+               (send-all-replays *temp-replay-vector*))
+             (begin
+               (vector-set! default-columns c 0)
+               (set! *temp-replay-vector*
+                     (vector-sort *temp-replay-vector* string<?
+                                  #:key get-sniper-name))
+               (send-all-replays *temp-replay-vector*)))]
+        [(list 'list-box-column 2)
+         (if (= 0 (vector-ref default-columns c))
+             (begin
+               (vector-set! default-columns c 1)
+               (set! *temp-replay-vector*
+                     (vector-sort *temp-replay-vector* string>?
+                                  #:key replay-result))
+               (send-all-replays *temp-replay-vector*))
+             (begin
+               (vector-set! default-columns c 0)
+               (set! *temp-replay-vector*
+                     (vector-sort *temp-replay-vector* string<?
+                                  #:key replay-result))
+               (send-all-replays *temp-replay-vector*)))]
+        [(list 'list-box-column 3)
+         (if (= 0 (vector-ref default-columns c))
+             (begin
+               (vector-set! default-columns c 1)
+               (set! *temp-replay-vector*
+                     (vector-sort *temp-replay-vector* string>?
+                                  #:key replay-venue))
+               (send-all-replays *temp-replay-vector*))
+             (begin
+               (vector-set! default-columns c 0)
+               (set! *temp-replay-vector*
+                     (vector-sort *temp-replay-vector* string<?
+                                  #:key replay-venue))
+               (send-all-replays *temp-replay-vector*)))]
+        [(list 'list-box-column 4)
+         (if (= 0 (vector-ref default-columns c))
+             (begin
+               (vector-set! default-columns c 1)
+               (set! *temp-replay-vector* (vector-sort *temp-replay-vector* >
+                                                       #:key replay-start-time))
+               (send-all-replays *temp-replay-vector*))
+             (begin
+               (vector-set! default-columns c 0)
+               (set! *temp-replay-vector* (vector-sort *temp-replay-vector* <
+                                                       #:key replay-start-time))
+               (send-all-replays *temp-replay-vector*)))]
+        [(list 'list-box-dclick _) (show-single-match (vector-ref *temp-replay-vector*
+                                                                  (- (- (vector-length *temp-replay-vector*) 1) (car c))))]
+        [(list _ _) null]))))
+
 ; The main select section, implemented a list-bx
 (define replay-select (new list-box%
                            [parent main-frame]
                            [label #f]
                            [choices '()]
-                           [callback
-                            (lambda (list-box control-event)
-                              (let* ([event-type (send control-event get-event-type)]
-                                     ; Wraparound when to avoid errors on single click
-                                     [c (if (equal? event-type 'list-box)
-                                            null
-                                            (if (equal? event-type 'list-box-dclick)
-                                                (send list-box get-selections)
-                                                (send control-event get-column)))])
-                                (match (list event-type c)
-                                  [(list 'list-box-column 0)
-                                   (if (= 0 (vector-ref default-columns c))
-                                       (begin
-                                         (vector-set! default-columns c 1)
-                                         (set! *temp-replay-vector* (vector-sort *temp-replay-vector* string>?
-                                                                        #:key get-spy-name))
-                                         (send-all-replays *temp-replay-vector*))
-                                       (begin
-                                         (vector-set! default-columns c 0)
-                                         (set! *temp-replay-vector* (vector-sort *temp-replay-vector* string<?
-                                                                        #:key get-spy-name))
-                                         (send-all-replays *temp-replay-vector*)))]
-                                  [(list 'list-box-column 1)
-                                   (if (= 0 (vector-ref default-columns c))
-                                       (begin
-                                         (vector-set! default-columns c 1)
-                                         (set! *temp-replay-vector*
-                                               (vector-sort *temp-replay-vector* string>?
-                                                     #:key get-sniper-name))
-                                         (send-all-replays *temp-replay-vector*))
-                                       (begin
-                                         (vector-set! default-columns c 0)
-                                         (set! *temp-replay-vector*
-                                               (vector-sort *temp-replay-vector* string<?
-                                                     #:key get-sniper-name))
-                                         (send-all-replays *temp-replay-vector*)))]
-                                  [(list 'list-box-column 2)
-                                   (if (= 0 (vector-ref default-columns c))
-                                       (begin
-                                         (vector-set! default-columns c 1)
-                                         (set! *temp-replay-vector*
-                                               (vector-sort *temp-replay-vector* string>?
-                                                     #:key replay-result))
-                                         (send-all-replays *temp-replay-vector*))
-                                       (begin
-                                         (vector-set! default-columns c 0)
-                                         (set! *temp-replay-vector*
-                                               (vector-sort *temp-replay-vector* string<?
-                                                     #:key replay-result))
-                                         (send-all-replays *temp-replay-vector*)))]
-                                  [(list 'list-box-column 3)
-                                   (if (= 0 (vector-ref default-columns c))
-                                       (begin
-                                         (vector-set! default-columns c 1)
-                                         (set! *temp-replay-vector*
-                                               (vector-sort *temp-replay-vector* string>?
-                                                     #:key replay-venue))
-                                         (send-all-replays *temp-replay-vector*))
-                                       (begin
-                                         (vector-set! default-columns c 0)
-                                         (set! *temp-replay-vector*
-                                               (vector-sort *temp-replay-vector* string<?
-                                                     #:key replay-venue))
-                                         (send-all-replays *temp-replay-vector*)))]
-                                  [(list 'list-box-column 4)
-                                   (if (= 0 (vector-ref default-columns c))
-                                       (begin
-                                         (vector-set! default-columns c 1)
-                                         (set! *temp-replay-vector* (vector-sort *temp-replay-vector* >
-                                                                        #:key replay-start-time))
-                                         (send-all-replays *temp-replay-vector*))
-                                       (begin
-                                         (vector-set! default-columns c 0)
-                                         (set! *temp-replay-vector* (vector-sort *temp-replay-vector* <
-                                                                        #:key replay-start-time))
-                                         (send-all-replays *temp-replay-vector*)))]
-                                  [(list 'list-box-dclick _) (show-single-match (vector-ref *temp-replay-vector*
-                                                                                            (- (- (vector-length *temp-replay-vector*) 1) (car c))))]
-                                  [(list _ _) null])))]
+                           [callback replay-select-callback]
                            [style (list 'extended 'column-headers 'clickable-headers 'reorderable-headers)]
                            [min-height 500]
                            [columns (list "Spy"
@@ -177,13 +180,6 @@
                                           "Outcome"
                                           "Venue"
                                           "Date")]))
-
-; Default column widths for presentation
-(send replay-select set-column-width 0 200 0 10000)
-(send replay-select set-column-width 1 200 0 10000)
-(send replay-select set-column-width 2 150 0 10000)
-(send replay-select set-column-width 3 175 0 10000)
-(send replay-select set-column-width 4 200 0 10000)
 
 ; Menu items
 (define menu-bar (new menu-bar% (parent main-frame)))
@@ -213,6 +209,7 @@
                                          (set! *temp-replay-vector* good1)
                                          (send-all-replays *temp-replay-vector*)
                                          (end-busy-cursor)))))]))
+
 (define open-folder (new menu-item% [label "Open Directory"] [parent file-menu]
                          (callback (lambda (x y)
                                      (let*-values ([(dir) (get-directory
@@ -700,6 +697,7 @@
                                              (send-all-replays *temp-replay-vector*))
                                            (end-busy-cursor))))))
                                (send filter-menu show #t))]))
+
 (define reset (new menu-item% [label "Reset"] [parent filter-menu]
                    [shortcut-prefix (list 'ctl)]
                    [shortcut #\R]
@@ -709,6 +707,7 @@
                                (send-all-replays *temp-replay-vector*))]))
 
 (define date-menu (new menu% (label "Date") (parent menu-bar)))
+
 (define (helper-callback s)
   (lambda (item event) (date-display-format s)
      (send-all-replays *temp-replay-vector*)))
@@ -723,6 +722,13 @@
 (define iso (new menu-item% (label "ISO-8601") (parent date-menu) (callback (helper-callback 'iso-8601))))
 (define rfc (new menu-item% (label "RFC-2822") (parent date-menu) (callback (helper-callback 'rfc2822))))
 ;(define jul (new menu-item% (label "Julian") (parent date-menu) (callback (helper-callback 'julian))))
+
+; Default column widths for presentation
+(send replay-select set-column-width 0 200 0 10000)
+(send replay-select set-column-width 1 200 0 10000)
+(send replay-select set-column-width 2 150 0 10000)
+(send replay-select set-column-width 3 175 0 10000)
+(send replay-select set-column-width 4 200 0 10000)
 
 ; Show the window
 (send main-frame show #t)

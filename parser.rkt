@@ -77,6 +77,7 @@
     [#xe6146120 "Modern"]
     [4091941985 "Modern"]
     [#x35ac5135 "Redwoods"]
+    ; If map's not found, just punt it to an integer, then a string
     [_ (~a (integer-bytes->integer bytes #f))]))
 
 ;;;
