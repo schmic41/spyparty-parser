@@ -29,7 +29,8 @@
                 venue
                 venue-variant
                 guest-count)
-  #:transparent)
+  ;#:transparent
+  )
 
 ;;;
 
@@ -77,7 +78,7 @@
     [#xe6146120 "Modern"]
     [4091941985 "Modern"]
     [#x35ac5135 "Redwoods"]
-    ; If map's not found, just punt it to an integer, then a string
+    ; If map's not found, just punt it to a string
     [_ (~a (integer-bytes->integer bytes #f))]))
 
 ;;;
@@ -138,7 +139,7 @@
                                         [purloin? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 6)))) "Purloin Guest List")]
                                         [fingerprint? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 7)))) "Fingerprint Ambassador")])
                                    (list bug? contact? transfer? swap? inspect? seduce? purloin? fingerprint?))]
-             [game-type (if (equal? base-type "Known")
+             [game-type (if (equal? base-type "k")
                             (~a base-type available)
                             (~a base-type required "/" available))]
              [spy-name (bytes->string/utf-8 (subbytes header 80 (+ 80 spy-length)))]
@@ -223,7 +224,7 @@
                                         [purloin? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 6)))) "Purloin Guest List")]
                                         [fingerprint? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 7)))) "Fingerprint Ambassador")])
                                    (list bug? contact? transfer? swap? inspect? seduce? purloin? fingerprint?))]
-             [game-type (if (equal? base-type "Known")
+             [game-type (if (equal? base-type "k")
                             (~a base-type available)
                             (~a base-type required "/" available))]
              [spy-name (bytes->string/utf-8 (subbytes header #x54 (+ #x54 spy-length)))]
@@ -338,7 +339,7 @@
                                         [purloin? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 6)))) "Purloin Guest List")]
                                         [fingerprint? (when (not (= 0 (bitwise-and tempint (arithmetic-shift 1 7)))) "Fingerprint Ambassador")])
                                    (list bug? contact? transfer? swap? inspect? seduce? purloin? fingerprint?))]
-             [game-type (if (equal? base-type "Known")
+             [game-type (if (equal? base-type "k")
                             (~a base-type available)
                             (~a base-type required "/" available))]
              [venue (get-venue (subbytes header #x40 (+ 4 #x40)))]
@@ -452,7 +453,7 @@
                                    (list bug? contact? transfer? swap? inspect? seduce? purloin? fingerprint?))]
              [guest-count (integer-bytes->integer (subbytes header #x54 #x58) #f)]
              [start-duration (integer-bytes->integer (subbytes header #x58 (+ 4 #x58)) #f)]
-             [game-type (if (equal? base-type "Known")
+             [game-type (if (equal? base-type "k")
                             (~a base-type available)
                             (~a base-type required "/" available))]
              [venue (get-venue (subbytes header #x40 (+ 4 #x40)))]
