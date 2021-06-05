@@ -14,18 +14,20 @@ The replay viewer allows you to run the [Glicko-2](http://www.glicko.net/glicko.
 
 # Current State
 
-Currently, the Replay Viewer is fully operational and should be relatively bug-free.
+The Replay Viewer is operational and should be bug-free.
 
 If you encounter any bugs, please provide the error message that appears as well as the steps necessary to reproduce the error.
 
 # Thanks
 
-Thanks to checker, for documenting the replay header format, and to LtHummus for his SpyParty Replay Parser Tool in Python, which I used as a reference when hunting down some bad bugs.
+Thanks to checker, for documenting the replay header format, and to LtHummus for his Python parser, which I used as a reference when hunting down some bad bugs.
 
 # Build
 
 If you would like to build the binary from scratch, clone the source repository. Compiling requires the [Racket programming language](https://racket-lang.org/), version 7.7 Regular or CS. It should work with earlier versions.
 
-Three build scripts are provided: one for Windows, one for Mac, and one for Linux. The Windows binary has been tested, the Mac and Linux binaries have not.
+Three build scripts are provided: one for Windows, one for Mac, and one for Linux. The Windows and Linux binaries have been tested, the Mac binary has not.
+
+Once the build script has been run, the final bundled executable will be located inside the "SpyParty_Replay_Viewer" folder, along with all necessary dependencies.
 
 The source code is released under the MIT license.
