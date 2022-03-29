@@ -20,6 +20,9 @@
 (define main-frame (new frame% [label "SpyParty Replay Viewer"] [min-width 1000] [min-height 900]))
 (send main-frame center 'both)
 
+; Show the window
+(send main-frame show #t)
+
 (define (show-single-match r)
   (define temp-frame (new frame% [label "Replay"] [parent main-frame] [min-width 700] [min-height 500]))
   (send temp-frame center 'both)
@@ -705,15 +708,8 @@
   (lambda (item event) (date-display-format s)
      (send replay-select update-replays!)))
 
-; TODO: format strings for all of these
 (define iso (new menu-item% (label "ISO-8601") (parent date-menu) (callback (helper-callback 'iso-8601))))
 (define rfc (new menu-item% (label "RFC-2822") (parent date-menu) (callback (helper-callback 'rfc2822))))
-;(define jul (new menu-item% (label "Julian") (parent date-menu) (callback (helper-callback 'julian))))
-;(define am (new menu-item% (label "American") (parent date-menu) (callback (helper-callback 'american))))
-;(define ch (new menu-item% (label "Chinese") (parent date-menu) (callback (helper-callback 'chinese))))
-;(define ger (new menu-item% (label "German") (parent date-menu) (callback (helper-callback 'german))))
-;(define ind (new menu-item% (label "Indian") (parent date-menu) (callback (helper-callback 'indian))))
-;(define iri (new menu-item% (label "Irish") (parent date-menu) (callback (helper-callback 'irish))))
 
 ; Default column widths for presentation
 (send replay-select set-column-width 0 200 0 10000)
@@ -721,6 +717,3 @@
 (send replay-select set-column-width 2 150 0 10000)
 (send replay-select set-column-width 3 175 0 10000)
 (send replay-select set-column-width 4 200 0 10000)
-
-; Show the window
-(send main-frame show #t)

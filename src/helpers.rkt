@@ -1,5 +1,9 @@
-#lang racket
+#lang racket/base
 
+(require racket/match)
+(require racket/list)
+(require racket/path)
+(require racket/file)
 (require "parser.rkt")
 (provide (all-defined-out))
 

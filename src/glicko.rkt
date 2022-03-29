@@ -1,5 +1,6 @@
-#lang racket
+#lang racket/base
 
+(require racket/list)
 (require math/base)
 
 (provide glicko (struct-out player))

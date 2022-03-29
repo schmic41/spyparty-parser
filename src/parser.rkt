@@ -1,7 +1,6 @@
-#lang racket
+#lang racket/base
 
-; TODO: Add map and selected mission support
-
+(require racket/format)
 (require racket/match)
 
 (provide (struct-out replay) (struct-out exception) parse-game)
